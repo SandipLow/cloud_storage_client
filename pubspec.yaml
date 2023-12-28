@@ -1,0 +1,51 @@
+name: cloud_storage_client
+description: One client for many cloud storage providers
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.19.4 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  flutter_secure_storage: ^8.1.0
+  googleapis: ^11.3.0
+  googleapis_auth: ^1.4.1
+  http: ^0.13.6
+  url_launcher: ^6.1.11
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/images/
+
+  fonts:
+    - family: Lalezar
+      fonts:
+        - asset: assets/fonts/Lalezar/Lalezar-Regular.ttf
+          weight: 700
+
+    - family: Mulish
+      fonts:
+        - asset: assets/fonts/Mulish/Mulish-VariableFont_wght.ttf
+        - asset: assets/fonts/Mulish/Mulish-Italic-VariableFont_wght.ttf
+          style: italic
+
+    - family: SourceSans3
+      fonts:
+        - asset: assets/fonts/Source_Sans_3/SourceSans3-VariableFont_wght.ttf
+        - asset: assets/fonts/Source_Sans_3/SourceSans3-Italic-VariableFont_wght.ttf
+          style: italic
