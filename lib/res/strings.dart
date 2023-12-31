@@ -1,14 +1,16 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:cloud_storage_client/res/secrets.dart';
+
 class Strings {
   static const String GOOGLE_DRIVE_PREFIX = "g_drive";
-  static const String GOOGLE_DRIVE_CLIENTID = "323154101094-s5bpkdq441g846229hk4oe6ivrm1tao8.apps.googleusercontent.com";
-  static const String GOOGLE_DRIVE_CLIENTSECRET = "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";
+  static const String GOOGLE_DRIVE_CLIENTID = Secrets.GOOGLE_DRIVE_CLIENTID;
+  static const String GOOGLE_DRIVE_CLIENTSECRET = Secrets.GOOGLE_DRIVE_CLIENTSECRET;
 
-  static const String YANDEX_CLIENTID = "daded94f852f455dbae7194f6f5b2bd6";
-  static const String YANDEX_CLIENTSECRET = "384fe64f99da45b5bc871aa0f4ee71d1";
-  static const String YANDEX_REDIRECTURI = "http://127.0.0.1:8080/redirect/yandex";
   static const String YANDEX_DISK_PREFIX = "yandex";
+  static const String YANDEX_CLIENTID = Secrets.YANDEX_CLIENTID;
+  static const String YANDEX_CLIENTSECRET = Secrets.YANDEX_CLIENTSECRET;
+  static const String YANDEX_REDIRECTURI = Secrets.YANDEX_REDIRECTURI;
 
   static const String FILE_TYPES_FOLDER = "Folder";
   static const String FILE_TYPES_IMAGE = "Image";

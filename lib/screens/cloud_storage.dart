@@ -33,7 +33,7 @@ class _CloudStorageState extends State<CloudStorage> {
                   title: const Text("Add Account"),
                   onTap: () async {
                     // Open a modal
-                    var result = await showModalBottomSheet(
+                    await showModalBottomSheet(
                       context: context,
                       builder: (context) => const AddAccountModal()
                     );
