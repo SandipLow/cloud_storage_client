@@ -275,6 +275,15 @@ class YandexDisk {
 
   // Download File
   Future<File> downloadFile(String fileId) async {
+    Directory tempDir = await _storage.getTemporaryFolder();
+
+    final fileName = '${Strings.TEMPORARY_FILE_PREFIX}_${Strings.YANDEX_DISK_PREFIX}_${label}_${fileId.replaceAll(':', '_').replaceAll('/', '_')}';
+    final file = File('${tempDir.path}/$fileName');
+
+    if (await file.exists()) {
+      return file;
+    }
+
     var client = await _getClient();
     var uri = Uri(
       scheme: 'https',
@@ -290,16 +299,14 @@ class YandexDisk {
       throw Exception("Error downloading file");
     }
 
-    // save file to temp
-    Directory tempDir = await _storage.getTemporaryFolder();
+    var downloadUrl = jsonDecode(response.body)["href"];
+    var downloadResponse = await client.get(Uri.parse(downloadUrl));
 
-    // get file name
-    var fileName = jsonDecode(response.body)["name"];
+    if (downloadResponse.statusCode != 200) {
+      throw Exception("Error downloading file");
+    }
 
-    // save file to temp
-    File file = File("${tempDir.path}/$fileName");
-    await file.writeAsBytes(response.bodyBytes);
-
+    await file.writeAsBytes(downloadResponse.bodyBytes);
     return file;
     
   }

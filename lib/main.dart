@@ -1,3 +1,4 @@
+import 'package:cloud_storage_client/res/fonts.dart';
 import 'package:cloud_storage_client/screens/home_tab_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_storage_client/res/colors.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
           primary: MyColors.primary,
           secondary: MyColors.secondary,
         ),
+        fontFamily: Fonts.Mulish,
       ),
 
       // Dark Theme
@@ -31,6 +33,7 @@ class MyApp extends StatelessWidget {
           primary: MyColors.primary,
           secondary: MyColors.secondary,
         ),
+        fontFamily: Fonts.Mulish,
       ),
 
       home: const MainApp(),

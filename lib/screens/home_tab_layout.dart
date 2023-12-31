@@ -85,6 +85,8 @@ class _HomeTabLayoutState extends State<HomeTabLayout> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: tabs.map((tab) => tab.bottomNavigationBarItem).toList(),
+        backgroundColor: MyColors.background(context),
+        type: BottomNavigationBarType.fixed,
         unselectedItemColor: MyColors.secondary,
         selectedItemColor: MyColors.primary,
         currentIndex: _selectedTabIndex,

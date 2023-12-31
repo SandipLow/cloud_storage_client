@@ -34,6 +34,7 @@ Map<String, Map<String, Icon>> _mimeTypes = {
   "application/vnd.google-apps.presentation": { "Presentation": const Icon(Icons.slideshow) },
   "application/vnd.ms-powerpoint": { "Presentation": const Icon(Icons.slideshow) },
   "application/vnd.openxmlformats-officedocument.presentationml.presentation": { "Presentation": const Icon(Icons.slideshow) },
+
   "image/jpeg": { "Image": const Icon(Icons.image) },
   "image/png": { "Image": const Icon(Icons.image) },
   "image/gif": { "Image": const Icon(Icons.image) },
@@ -176,22 +177,8 @@ class GoogleDrive {
       type: _mimeTypes[e.mimeType]!=null ? _mimeTypes[e.mimeType]!.keys.first
              : "Unknown",
 
-      icon: e.thumbnailLink!=null ? 
-              Padding(
-                padding: const EdgeInsets.all(2.0),
-                
-                child: Image.network(
-                  e.thumbnailLink!, 
-                  fit: BoxFit.cover, 
-                  width: 50,
-                  height: 50,
-                ),
-
-              )
-            : 
-              _mimeTypes[e.mimeType]!=null ? _mimeTypes[e.mimeType]!.values.first
-            : 
-              const ImageIcon(Images.unknownFile),
+      icon: _mimeTypes[e.mimeType]!=null ? _mimeTypes[e.mimeType]!.values.first
+            : const ImageIcon(Images.unknownFile),
 
     )).toList();
 
@@ -199,14 +186,21 @@ class GoogleDrive {
   
   // Download File
   Future<io.File> downloadFile(String fileId) async {
+    io.Directory tempDir = await _storage.getTemporaryFolder();
+
+    final fileName = '${Strings.TEMPORARY_FILE_PREFIX}_${Strings.GOOGLE_DRIVE_PREFIX}_${label}_$fileId';
+    final file = io.File('${tempDir.path}/$fileName');
+
+    if (await file.exists()) {
+      return file;
+    }
+
     var client = await _getClient();
     var driveApi = DriveApi(client);
     var response = await driveApi.files.get(fileId, downloadOptions: DownloadOptions.fullMedia) as Media;
-
     var bytes = await http.ByteStream(response.stream).toBytes();
-    var file = io.File('path/to/save/downloaded_file.txt');
-    await file.writeAsBytes(bytes);
 
+    await file.writeAsBytes(bytes);
     return file;
   }
 

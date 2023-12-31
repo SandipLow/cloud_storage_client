@@ -20,4 +20,7 @@ class Strings {
   static const String FILE_TYPES_ARCHIVE = "Archive";
   static const String FILE_TYPES_WEB = "Web";
   static const String FILE_TYPES_CODE = "Code";
+  static const String FILE_TYPES_UNKNOWN = "Unknown";
+  
+  static const String TEMPORARY_FILE_PREFIX = "temporary_file";
 }

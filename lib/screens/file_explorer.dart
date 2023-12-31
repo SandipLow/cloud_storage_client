@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_storage_client/models/my_file.dart';
 import 'package:cloud_storage_client/res/strings.dart';
+import 'package:cloud_storage_client/screens/image_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 
 
 class FileExplorer extends StatefulWidget {
@@ -70,6 +74,44 @@ class _FileExplorerState extends State<FileExplorer> {
                 );
               }
 
+              // Image
+              else if (_files[idx].type == Strings.FILE_TYPES_IMAGE) {
+                showDialog(
+                  context: context,
+                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                );
+                widget.providerService.downloadFile(_files[idx].id).then((File imgFile){
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return ImageViewer(
+                        image: Image.file(imgFile),
+                        actions: [
+                          IconButton(
+                            onPressed: () async {
+                              await OpenFile.open(imgFile.path);
+                            },
+                            icon: const Icon(Icons.open_in_new),
+                          ),
+                        ],
+                      );
+                    })
+                  );
+                });
+              }
+
+              // Other
+              else {
+                showDialog(
+                  context: context,
+                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                );
+                widget.providerService.downloadFile(_files[idx].id).then((File file) async {
+                  Navigator.pop(context);
+                  await OpenFile.open(file.path);
+                });
+              }
 
             },
           );

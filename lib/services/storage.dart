@@ -198,18 +198,18 @@ class Storage {
   }
 
   Future<Directory> getTemporaryFolder() async {
-    var path = await _storage.read(key: "temporaryFolder");
+    var path = await _storage.read(key: _TEMPORARY_FOLDER_KEY);
 
     if (path == null) {
       var settings = await defaultFolderSetting();
-      return Directory(settings["temporaryFolder"]);
+      return Directory(settings[_TEMPORARY_FOLDER_KEY]);
     }
 
     return Directory(path);
   }
 
   Future setTemporaryFolder(String folder) async {
-    await _storage.write(key: "temporaryFolder", value: folder);
+    await _storage.write(key: _TEMPORARY_FOLDER_KEY, value: folder);
   }
 
   Future<List<Directory>> getAccessDirectories() async {

@@ -17,6 +17,7 @@ dependencies:
   googleapis_auth: ^1.4.1
   http: ^0.13.6
   url_launcher: ^6.1.11
+  open_file: ^3.3.2
 
 dev_dependencies:
   flutter_test:
