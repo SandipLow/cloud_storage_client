@@ -217,7 +217,7 @@ class Storage {
 
     if (paths == null) {
       var settings = await defaultFolderSetting();
-      return [Directory(settings[_ACCESS_DIRECTORIES_KEY])];
+      return settings[_ACCESS_DIRECTORIES_KEY].map((e) => Directory(e)).toList();
     }
 
     List<String> directories = paths.split(_seperator);
@@ -264,7 +264,7 @@ class Storage {
 
     if (paths == null) {
       var settings = await defaultFolderSetting();
-      return [Directory(settings[_IGNORE_DIRECTORIES_KEY])];
+      return settings[_IGNORE_DIRECTORIES_KEY].map((e) => Directory(e)).toList();
     }
 
     List<String> directories = paths.split(_seperator);

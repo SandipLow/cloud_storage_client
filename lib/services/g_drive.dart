@@ -175,7 +175,7 @@ class GoogleDrive {
       name: e.name!,
 
       type: _mimeTypes[e.mimeType]!=null ? _mimeTypes[e.mimeType]!.keys.first
-             : "Unknown",
+             : Strings.FILE_TYPES_UNKNOWN,
 
       icon: _mimeTypes[e.mimeType]!=null ? _mimeTypes[e.mimeType]!.values.first
             : const ImageIcon(Images.unknownFile),

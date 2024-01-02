@@ -2,6 +2,7 @@ import 'package:cloud_storage_client/res/assets.dart';
 import 'package:cloud_storage_client/res/colors.dart';
 import 'package:cloud_storage_client/res/fonts.dart';
 import 'package:cloud_storage_client/screens/cloud_storage.dart';
+import 'package:cloud_storage_client/screens/local_albums.dart';
 import 'package:flutter/material.dart';
 
 
@@ -28,9 +29,9 @@ List<Tab> tabs = [
   Tab(
     bottomNavigationBarItem: const BottomNavigationBarItem(
       icon: Icon(Icons.photo),
-      label: "Photos",
+      label: "Local Albums",
     ),
-    content: const Center(child: Text("Photos")),
+    content: const LocalAlbums(),
   ),
   Tab(
     bottomNavigationBarItem: const BottomNavigationBarItem(
