@@ -137,13 +137,13 @@ class YandexClient {
   }
 
   getEmail() async {
-    var response = await client.get(userEmailUri);
+    var response = await get(userEmailUri);
     if (response.statusCode != 200) {
       throw Exception("Error getting email");
     }
 
     var data = jsonDecode(response.body);
-    return data["default_emails"];
+    return data["default_email"];
     
   }
 
@@ -184,7 +184,7 @@ class YandexClient {
 
 class YandexDisk {
   // storage instance to manage data in flutter storage
-  final _storage = Storage();
+  static final _storage = Storage();
   
   // email / username in the provider
   late String label;
@@ -208,8 +208,11 @@ class YandexDisk {
     //Get Email
     var email = await authClient.getEmail();
 
+    // save drive
+    await _storage.addDrive(Strings.YANDEX_DISK_PREFIX, email);
+
     //Save Credentials
-    await Storage().saveYandexCredentials(email, authClient.accessToken);
+    await _storage.saveYandexCredentials(email, authClient.accessToken);
 
     return YandexDisk(label: email);
   }
@@ -258,7 +261,7 @@ class YandexDisk {
           id: item["path"],
           name: item["name"],
 
-          type: item["type"] == "dir" ? "Folder"
+          type: item["type"] == "dir" ? Strings.FILE_TYPES_FOLDER
                 : _mimeTypes[item["mime_type"]] != null ? _mimeTypes[item["mime_type"]]!.keys.first
                 : "Unknown",
 

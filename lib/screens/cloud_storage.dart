@@ -22,6 +22,7 @@ class _CloudStorageState extends State<CloudStorage> {
       builder: (context, snapshot) {
 
         if (snapshot.hasData && snapshot.data != null) {
+
           return ListView.builder(
             itemCount: snapshot.data!.length + 1,
             itemBuilder: (context, index) {
@@ -35,7 +36,9 @@ class _CloudStorageState extends State<CloudStorage> {
                     // Open a modal
                     await showModalBottomSheet(
                       context: context,
-                      builder: (context) => const AddAccountModal()
+                      builder: (context) => AddAccountModal(
+                        parentSetState: setState,
+                      )
                     );
                   },
                 );
@@ -58,6 +61,7 @@ class _CloudStorageState extends State<CloudStorage> {
               );
             },
           );
+          
         }
 
         else {
@@ -69,14 +73,10 @@ class _CloudStorageState extends State<CloudStorage> {
 }
 
 
-class AddAccountModal extends StatefulWidget {
-  const AddAccountModal({super.key});
+class AddAccountModal extends StatelessWidget {
+  final parentSetState;
 
-  @override
-  State<AddAccountModal> createState() => _AddAccountModalState();
-}
-
-class _AddAccountModalState extends State<AddAccountModal> {
+  const AddAccountModal({super.key, required this.parentSetState});
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +95,10 @@ class _AddAccountModalState extends State<AddAccountModal> {
             onTap: () {
               GoogleDrive.addAccount().then((GoogleDrive gDrive) {
                 Navigator.pop(context);
+                parentSetState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Account added"))
+                );
               });
             },
           ),
@@ -106,6 +110,10 @@ class _AddAccountModalState extends State<AddAccountModal> {
             onTap: () async {
               YandexDisk.addAccount().then((YandexDisk yandex) {
                 Navigator.pop(context);
+                parentSetState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Account added"))
+                );
               });
             },
           ),

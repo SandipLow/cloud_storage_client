@@ -1,4 +1,4 @@
-package com.sdek.cloud_storage_client.cloud_storage_client;
+package com.sdek.cloud_storage_client;
 
 import io.flutter.embedding.android.FlutterActivity;
 

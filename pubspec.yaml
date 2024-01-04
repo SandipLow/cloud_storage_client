@@ -18,6 +18,7 @@ dependencies:
   http: ^0.13.6
   url_launcher: ^6.1.11
   open_file: ^3.3.2
+  permission_handler: ^11.1.0
 
 dev_dependencies:
   flutter_test:

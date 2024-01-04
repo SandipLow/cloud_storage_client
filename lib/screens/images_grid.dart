@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cloud_storage_client/models/my_drive.dart';
 import 'package:cloud_storage_client/screens/image_viewer.dart';
 import 'package:cloud_storage_client/services/storage.dart';
@@ -56,6 +54,8 @@ class ImagesGrid extends StatelessWidget {
               );
             },
             child: Card(
+              borderOnForeground: true,
+              elevation: 0,
               child: images[index]
             )
           );

@@ -129,7 +129,7 @@ class Storage {
 
 
   // Yandex Disks' info storage
-  Future saveYandexCredentials(String accessToken, String email) async {
+  Future saveYandexCredentials(String email, String accessToken) async {
     // Store the Yandex credentials securely
     await _storage.write(key: '${Strings.YANDEX_DISK_PREFIX}_$email', value: accessToken);
   }
@@ -217,7 +217,7 @@ class Storage {
 
     if (paths == null) {
       var settings = await defaultFolderSetting();
-      return settings[_ACCESS_DIRECTORIES_KEY].map((e) => Directory(e)).toList();
+      return settings[_ACCESS_DIRECTORIES_KEY].map((e) => Directory(e));
     }
 
     List<String> directories = paths.split(_seperator);
@@ -264,7 +264,7 @@ class Storage {
 
     if (paths == null) {
       var settings = await defaultFolderSetting();
-      return settings[_IGNORE_DIRECTORIES_KEY].map((e) => Directory(e)).toList();
+      return settings[_IGNORE_DIRECTORIES_KEY].map((e) => Directory(e));
     }
 
     List<String> directories = paths.split(_seperator);

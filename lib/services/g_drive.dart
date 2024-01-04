@@ -19,7 +19,7 @@ List<String> _scopes = [
 
 
 Map<String, Map<String, Icon>> _mimeTypes = {
-  "application/vnd.google-apps.folder": { "Folder": const Icon(Icons.folder)}, 
+  "application/vnd.google-apps.folder": { Strings.FILE_TYPES_FOLDER: const Icon(Icons.folder)}, 
 
   "application/vnd.google-apps.document": { "Document": const Icon(Icons.article) },
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { "Document": const Icon(Icons.article) },
@@ -100,6 +100,9 @@ class GoogleDrive {
     var email = profile.emailAddresses!.first.value;
 
     if (email == null) throw Exception("Email not found");
+
+    // save drive
+    await _storage.addDrive(Strings.GOOGLE_DRIVE_PREFIX, email);
 
     //Save Credentials
     await _storage.saveGDriveCredentials(email, authClient.credentials.accessToken, authClient.credentials.refreshToken);

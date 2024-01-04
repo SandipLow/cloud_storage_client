@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:cloud_storage_client/services/storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 
 class LocalAlbum {
   final String name;
@@ -17,6 +19,7 @@ class LocalAlbum {
     required this.files,
   });
 }
+
 
 class LocalAlbumService {
   static final _storage = Storage();
@@ -57,6 +60,34 @@ class LocalAlbumService {
     }
   }
 
+  static Future<bool> _verifyPermission() async {
+
+    if (Platform.isLinux) {
+      return true;
+    }
+
+    else if (Platform.isIOS || Platform.isAndroid || Platform.isWindows) {
+
+      var status = await Permission.storage.status;
+
+      if (!status.isGranted) {
+        await Permission.storage.request();
+
+        status = await Permission.storage.status;
+        
+        return status.isGranted;
+      }
+
+      return true;
+    }
+
+    else {
+      throw Exception('Unsupported platform');
+    }
+
+
+  }
+
   static Future getLocalAlbums() async {
     var accessDirectories = await _storage.getAccessDirectories();
     var ignoreDirectories = await _storage.getIgnoreDirectories();
@@ -66,6 +97,12 @@ class LocalAlbumService {
     if (kDebugMode) {
       print(accessDirectories);
       print(ignoreDirectories);
+    }
+
+    var status = await _verifyPermission();
+
+    if (!status) {
+      return localAlbums;
     }
 
     for (var directory in accessDirectories) {

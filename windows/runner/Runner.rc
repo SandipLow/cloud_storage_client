@@ -93,7 +93,7 @@ BEGIN
             VALUE "FileDescription", "cloud_storage_client" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "cloud_storage_client" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 com.sdek.cloud_storage_client. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2023 com.sdek.cloud_storage_client All rights reserved." "\0"
             VALUE "OriginalFilename", "cloud_storage_client.exe" "\0"
             VALUE "ProductName", "cloud_storage_client" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
