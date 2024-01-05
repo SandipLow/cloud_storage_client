@@ -19,6 +19,7 @@ dependencies:
   url_launcher: ^6.1.11
   open_file: ^3.3.2
   permission_handler: ^11.1.0
+  flutter_image_compress: ^2.1.0
 
 dev_dependencies:
   flutter_test:

@@ -208,7 +208,7 @@ class GoogleDrive {
   }
 
   // upload file
-  Future uploadFile(String filePath, String? folderId, String? fileName) async {
+  Future uploadFile({required String filePath, String? folderId, String? fileName}) async {
     var client = await _getClient();
     var drive = DriveApi(client);
     var file = File();

@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:cloud_storage_client/models/my_drive.dart';
 import 'package:cloud_storage_client/res/colors.dart';
+import 'package:cloud_storage_client/screens/image_viewer.dart';
 import 'package:cloud_storage_client/screens/images_grid.dart';
 import 'package:cloud_storage_client/services/local_albums.dart';
+import 'package:cloud_storage_client/services/storage.dart';
 import 'package:flutter/material.dart';
 
 class LocalAlbums extends StatefulWidget {
@@ -35,9 +38,47 @@ class _LocalAlbumsState extends State<LocalAlbums> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ImagesGrid(
-                        images: localAlbums[index].files.map((e) => Image.file(File(e), fit: BoxFit.cover,)).toList(),
-                      ),
+                      builder: (context) {
+                        return ImagesGrid(
+                          imageFiles: localAlbums[index]
+                                    .files
+                                    .map((e) {
+                                      return File(e);
+                                    })
+                                    .toList(),
+                          handleTapImage: (image, idx, ctx) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ImageViewer(
+                                  image: image,
+                                  actions: [
+                                    IconButton(
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context, 
+                                          builder: (context) {
+                                            return UploadDialog( file: File(localAlbums[index].files[idx]) );
+                                          }
+                                        );
+                                      },
+                                      icon: const Icon(Icons.upload),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {},
+                                      icon: const Icon(Icons.share),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {},
+                                      icon: const Icon(Icons.delete),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            );
+                          },
+                        );
+                      },
                     ), 
                   );
                 },
@@ -80,6 +121,85 @@ class _LocalAlbumsState extends State<LocalAlbums> {
 
         return const Center(child: CircularProgressIndicator());
       },
+    );
+  }
+}
+
+
+class UploadDialog extends StatefulWidget {
+  final File file;
+
+  const UploadDialog({required this.file, super.key});
+
+  @override
+  State<UploadDialog> createState() => _UploadDialogState();
+}
+
+class _UploadDialogState extends State<UploadDialog> {
+  bool loading = true;
+  List<MyDrive> drives = [];
+
+  final storage = Storage();
+
+  @override
+  void initState() {
+    super.initState();
+    storage.getDrives().then((value) => {
+      setState(() {
+        loading = false;
+        drives = value;
+      })
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    return AlertDialog(
+      title: const Text("Select Drive"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: loading ? [
+          const CircularProgressIndicator(),
+        ] : drives.map((drive) => 
+            ListTile(
+              leading: drive.icon,
+              title: Text(drive.label),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                );
+                drive.providerService.uploadFile(
+                  filePath: widget.file.path,
+                ).then((result) {
+                  Navigator.pop(context);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Upload Success"))
+                  );
+
+                }).catchError((error) {
+                  Navigator.pop(context);
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Upload Failed"))
+                  );
+
+                });
+
+              },
+            )
+          ).toList(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          }, 
+          child: const Text("Cancel")
+        ),
+      ],
     );
   }
 }

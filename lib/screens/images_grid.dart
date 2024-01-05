@@ -1,12 +1,15 @@
-import 'package:cloud_storage_client/models/my_drive.dart';
-import 'package:cloud_storage_client/screens/image_viewer.dart';
-import 'package:cloud_storage_client/services/storage.dart';
+import 'dart:io';
+
+import 'package:cloud_storage_client/services/local_albums.dart';
 import 'package:flutter/material.dart';
 
-class ImagesGrid extends StatelessWidget {
-  final List<Image> images;
 
-  const ImagesGrid({super.key, required this.images});
+class ImagesGrid extends StatelessWidget {
+  final List<Image>? images;
+  final List<File>? imageFiles;
+  final Function handleTapImage;
+
+  const ImagesGrid({super.key, this.images, this.imageFiles, required this.handleTapImage});
 
   @override
   Widget build(BuildContext context) {
@@ -16,106 +19,61 @@ class ImagesGrid extends StatelessWidget {
       ),
       body: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
+          crossAxisCount: 2,
           childAspectRatio: 1,
         ),
-        itemCount: images.length,
+        itemCount: images!=null ? images?.length
+                    : imageFiles!=null ? imageFiles?.length
+                    : 0,
         itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ImageViewer(
-                    image: images[index],
-                    actions: [
-                      IconButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context, 
-                            builder: (context) {
-                              return const UploadDialog();
-                            }
-                          );
-                        },
-                        icon: const Icon(Icons.upload),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.share),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.delete),
-                      ),
-                    ],
-                  ),
+
+          if (images!=null) {
+            return GestureDetector(
+              onTap: () => handleTapImage(images![index], index, context),
+              child: Card(
+                borderOnForeground: true,
+                elevation: 0,
+                child: images![index]
+              )
+            );
+          }
+
+          else if (imageFiles!=null) {
+            return GestureDetector(
+              onTap: () => handleTapImage(Image.file(imageFiles![index]), index, context),
+              child: Card(
+                borderOnForeground: true,
+                elevation: 0,
+                child: FutureBuilder(
+                  future: LocalAlbumService.getCompressedImage(imageFiles![index].path),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Image.file(snapshot.data as File);
+                    }
+
+                    else {
+                      return Container(
+                        color: Colors.grey[300],
+                      );
+                    }
+                  },
                 )
-              );
-            },
+              )
+            );
+          }
+
+          return GestureDetector(
+            onTap: () {},
             child: Card(
               borderOnForeground: true,
               elevation: 0,
-              child: images[index]
+              child: Container(
+                color: Colors.grey[300],
+              )
             )
           );
         },
       ),
-    );
-  }
-}
-
-class UploadDialog extends StatefulWidget {
-  const UploadDialog({super.key});
-
-  @override
-  State<UploadDialog> createState() => _UploadDialogState();
-}
-
-class _UploadDialogState extends State<UploadDialog> {
-  bool loading = true;
-  List<MyDrive> drives = [];
-
-  final storage = Storage();
-
-  @override
-  void initState() {
-    super.initState();
-    storage.getDrives().then((value) => {
-      setState(() {
-        loading = false;
-        drives = value;
-      })
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return AlertDialog(
-      title: const Text("Select Drive"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: loading ? [
-          const CircularProgressIndicator(),
-        ] : drives.map((e) => 
-            ListTile(
-              leading: e.icon,
-              title: Text(e.label),
-              onTap: () {
-                // TODO: Upload image to drive
-              },
-            )
-          ).toList(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          }, 
-          child: const Text("Cancel")
-        ),
-      ],
     );
   }
 }

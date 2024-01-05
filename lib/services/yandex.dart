@@ -167,7 +167,7 @@ class YandexClient {
   }
 
   put(Uri uri, {dynamic body}) {
-    return client.post(
+    return client.put(
       uri,
       headers: {
         "Authorization": "OAuth $accessToken"
@@ -315,15 +315,17 @@ class YandexDisk {
   }
 
   // Upload File
-  Future uploadFile(String? folderId, File file) async {
+  Future uploadFile({String? folderId, required String filePath}) async {
     var client = await _getClient();
+    var file = File(filePath);
+
     var uri = Uri(
       scheme: 'https',
       host: 'cloud-api.yandex.net',
       path: '/v1/disk/resources/upload',
       queryParameters: {
-        'path': folderId == null ? 'disk:/${file.path.split("/").last}'
-                : 'disk:/$folderId/${file.path.split("/").last}',
+        'path': folderId == null ? 'disk:/${filePath.split("/").last}'
+                : 'disk:/$folderId/${filePath.split("/").last}',
         'overwrite': 'true',
       },
     );
@@ -342,8 +344,10 @@ class YandexDisk {
     );
 
     if (uploadResponse.statusCode != 201) {
-      throw Exception("Error uploading file");
+      throw Exception(uploadResponse.body);
     }
+
+    return uploadResponse;
     
   }
 }
