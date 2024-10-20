@@ -3,52 +3,54 @@ import 'package:cloud_storage_client/res/colors.dart';
 import 'package:cloud_storage_client/res/fonts.dart';
 import 'package:cloud_storage_client/screens/cloud_storage.dart';
 import 'package:cloud_storage_client/screens/local_albums.dart';
+import 'package:cloud_storage_client/screens/settings.dart';
 import 'package:flutter/material.dart';
 
-
-
-class Tab {
-  final BottomNavigationBarItem bottomNavigationBarItem;
+class TabContent {
+  final Widget tab;
   final Widget content;
 
-  Tab({
-    required this.bottomNavigationBarItem,
-    required this.content
+  TabContent({
+    required this.tab,
+    required this.content,
   });
 }
 
-
-List<Tab> tabs = [
-  Tab(
-    bottomNavigationBarItem: const BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: "Feeds",
-    ),
-    content: const Center(child: Text("Feeds")),
-  ),
-  Tab(
-    bottomNavigationBarItem: const BottomNavigationBarItem(
-      icon: Icon(Icons.photo),
-      label: "Local Albums",
+List<TabContent> tabs = [
+  TabContent(
+    tab: const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.photo),
+        SizedBox(width: 8),
+        Text("Local"),
+      ],
     ),
     content: const LocalAlbums(),
   ),
-  Tab(
-    bottomNavigationBarItem: const BottomNavigationBarItem(
-      icon: Icon(Icons.cloud),
-      label: "Cloud Storages",
+  TabContent(
+    tab: const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.cloud),
+        SizedBox(width: 8),
+        Text("Cloud"),
+      ],
     ),
     content: const CloudStorage(),
   ),
-  Tab(
-    bottomNavigationBarItem: const BottomNavigationBarItem(
-      icon: Icon(Icons.settings),
-      label: "Settings"
+  TabContent(
+    tab: const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.settings),
+        SizedBox(width: 8),
+        Text("Settings"),
+      ],
     ),
-    content: const Center(child: Text("Settings")),
+    content: const SettingsTab(),
   ),
 ];
-
 
 class HomeTabLayout extends StatefulWidget {
   const HomeTabLayout({super.key});
@@ -58,47 +60,41 @@ class HomeTabLayout extends StatefulWidget {
 }
 
 class _HomeTabLayoutState extends State<HomeTabLayout> {
-  int _selectedTabIndex = 0;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: MyColors.background(context),
-        foregroundColor: MyColors.text(context),
-        elevation: 0,
-        leading: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Image(image: Images.logo_256),
-        ),
-        title: const Text(
-          "cloud_storage_client",
-          style: TextStyle(
-            fontFamily: Fonts.Lalezar,
-          )
-        ),
-        actions: [
-          IconButton(
-            onPressed: (){},
-            icon: const Icon(Icons.person)
+    return DefaultTabController(
+      length: tabs.length,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: MyColors.background(context),
+          foregroundColor: MyColors.text(context),
+          elevation: 0,
+          leading: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Image(image: Images.logo_256),
           ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: tabs.map((tab) => tab.bottomNavigationBarItem).toList(),
-        backgroundColor: MyColors.background(context),
-        unselectedItemColor: MyColors.secondary,
-        selectedItemColor: MyColors.primary,
-        currentIndex: _selectedTabIndex,
-        onTap: (int index) {
-          setState(() {
-            _selectedTabIndex = index;
-          });
-        },
-      ),
-      body: IndexedStack(
-        index: _selectedTabIndex,
-        children: tabs.map((tab) => tab.content).toList(),
+          title: const Text(
+            "cloud_storage_client",
+            style: TextStyle(
+              fontFamily: Fonts.Lalezar,
+            ),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.person),
+            ),
+          ],
+          bottom: TabBar(
+            tabs: tabs.map((tabContent) => Tab(child: tabContent.tab)).toList(),
+            labelColor: MyColors.primary,
+            unselectedLabelColor: MyColors.secondary,
+            indicatorColor: MyColors.primary,
+          ),
+        ),
+        body: TabBarView(
+          children: tabs.map((tabContent) => tabContent.content).toList(),
+        ),
       ),
     );
   }

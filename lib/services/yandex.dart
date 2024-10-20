@@ -1,10 +1,14 @@
+// ignore_for_file: overridden_fields
+
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_storage_client/models/my_file.dart';
 import 'package:cloud_storage_client/res/assets.dart';
 import 'package:cloud_storage_client/res/strings.dart';
+import 'package:cloud_storage_client/services/storage_service.dart';
 import 'package:cloud_storage_client/services/storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -176,23 +180,32 @@ class YandexClient {
     );
   }
 
+  delete(Uri uri) {
+    return client.delete(
+      uri,
+      headers: {
+        "Authorization": "OAuth $accessToken"
+      },
+    );
+  }
+
   close() {
     client.close();
   }
  }
 
 
-class YandexDisk {
-  // storage instance to manage data in flutter storage
-  static final _storage = Storage();
-  
+class YandexDisk extends CloudStorageService {
   // email / username in the provider
+  @override
   late String label;
   
   // reference in storage
+  @override
   String prefix = Strings.GOOGLE_DRIVE_PREFIX;
   
   // Icon of the service
+  @override
   Widget icon = const Image(image: Images.googleDrive);
 
   
@@ -209,10 +222,10 @@ class YandexDisk {
     var email = await authClient.getEmail();
 
     // save drive
-    await _storage.addDrive(Strings.YANDEX_DISK_PREFIX, email);
+    await Storage.addDrive(Strings.YANDEX_DISK_PREFIX, email);
 
     //Save Credentials
-    await _storage.saveYandexCredentials(email, authClient.accessToken);
+    await Storage.saveYandexCredentials(email, authClient.accessToken);
 
     return YandexDisk(label: email);
   }
@@ -220,14 +233,14 @@ class YandexDisk {
   // http client
   Future<YandexClient> _getClient() async {
     //Get Credentials
-    var credentials = await _storage.getYandexCredentials(label);
+    var credentials = await Storage.getYandexCredentials(label);
 
     if (credentials==null) {
       //Needs user authentication
       var authClient = await YandexClient.clientViaUserConsent();
       
       //Save Credentials
-      await _storage.saveYandexCredentials(label, authClient.accessToken);
+      await Storage.saveYandexCredentials(label, authClient.accessToken);
       return authClient;
     }
 
@@ -235,6 +248,7 @@ class YandexDisk {
   }
 
   // get Folder contents
+  @override
   Future<List<MyFile>> getFolder({ String? folderId}) async {
     var client = await _getClient();
     var uri = Uri(
@@ -277,8 +291,9 @@ class YandexDisk {
   }
 
   // Download File
+  @override
   Future<File> downloadFile(String fileId) async {
-    Directory tempDir = await _storage.getTemporaryFolder();
+    Directory tempDir = await Storage.getTemporaryFolder();
 
     final fileName = '${Strings.TEMPORARY_FILE_PREFIX}_${Strings.YANDEX_DISK_PREFIX}_${label}_${fileId.replaceAll(':', '_').replaceAll('/', '_')}';
     final file = File('${tempDir.path}/$fileName');
@@ -315,7 +330,8 @@ class YandexDisk {
   }
 
   // Upload File
-  Future uploadFile({String? folderId, required String filePath}) async {
+  @override
+  Future<bool> uploadFile({String? folderId, required String filePath}) async {
     var client = await _getClient();
     var file = File(filePath);
 
@@ -325,13 +341,14 @@ class YandexDisk {
       path: '/v1/disk/resources/upload',
       queryParameters: {
         'path': folderId == null ? 'disk:/${filePath.split("/").last}'
-                : 'disk:/$folderId/${filePath.split("/").last}',
+                : '$folderId/${filePath.split("/").last}',
         'overwrite': 'true',
       },
     );
 
     var response = await client.get(uri);
     if (response.statusCode != 200) {
+      if (kDebugMode) print(response.body.toString());
       throw Exception("Error uploading file");
     }
 
@@ -347,7 +364,120 @@ class YandexDisk {
       throw Exception(uploadResponse.body);
     }
 
-    return uploadResponse;
+    return true;
     
   }
+  
+  // Delete File
+  @override
+Future<bool> deleteFile(String fileId) async {
+    var client = await _getClient();
+    var uri = Uri(
+      scheme: 'https',
+      host: 'cloud-api.yandex.net',
+      path: '/v1/disk/resources',
+      queryParameters: {
+        'path': fileId,
+        // 'permanently': 'true',
+      },
+    );
+
+    var response = await client.delete(uri);
+
+    if (response.statusCode != 204) {
+      throw Exception("Error deleting file");
+    }
+
+    return true;
+  }
+
+  @override
+  Future<bool> createFolder({required String folderName, String? parentFolderId}) async {
+    var client = await _getClient();
+    var uri = Uri(
+      scheme: 'https',
+      host: 'cloud-api.yandex.net',
+      path: '/v1/disk/resources',
+      queryParameters: {
+        'path': parentFolderId == null ? 'disk:/$folderName'
+                : 'disk:/$parentFolderId/$folderName',
+        'overwrite': 'true',
+      },
+    );
+
+    var response = await client.put(uri);
+
+    if (response.statusCode != 201) {
+      if (kDebugMode) print(response.body.toString());
+      throw Exception("Error creating folder");
+    }
+
+    return true;
+  }
+
+  @override
+  Future<bool> deleteFolder(String folderId) {
+    return deleteFile(folderId);
+  }
+
+  @override
+  Future<bool> renameFile(String fileId, String newName) async {
+    var newFileId = '${fileId.split('/').sublist(0, fileId.split('/').length - 1).join('/')}/$newName';
+    var client = await _getClient();
+
+    // Construct the move request URI
+    var uri = Uri(
+        scheme: 'https',
+        host: 'cloud-api.yandex.net',
+        path: '/v1/disk/resources/move',
+        queryParameters: {
+          "from": fileId,
+          "path": newFileId,
+          "overwrite": "true"
+        }
+    );
+
+    // Send the move/rename request
+    var response = await client.post(uri);
+
+    // Check if we got an asynchronous response (operation status)
+    if (response.statusCode == 202) {
+      var operationHref = jsonDecode(response.body)['href'];
+
+      // Poll the operation status
+      bool isCompleted = await _pollOperationStatus(operationHref, client);
+
+      if (isCompleted) {
+        return true;
+      } else {
+        throw Exception("Error: File rename operation did not complete successfully.");
+      }
+    } else if (response.statusCode == 201) {
+      // Immediate success response
+      return true;
+    } else {
+      if (kDebugMode) print(response.body.toString());
+      throw Exception("Error renaming file");
+    }
+  }
+
+  // Helper function to poll operation status
+  Future<bool> _pollOperationStatus(String operationHref, YandexClient client) async {
+    var operationUri = Uri.parse(operationHref);
+
+    while (true) {
+      var operationResponse = await client.get(operationUri);
+      var operationStatus = jsonDecode(operationResponse.body);
+
+      if (operationStatus['status'] == 'success') {
+        return true;
+      } else if (operationStatus['status'] == 'failed') {
+        return false;
+      }
+
+      // Wait for a short period before checking again
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
 }

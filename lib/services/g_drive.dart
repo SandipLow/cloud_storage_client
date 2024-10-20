@@ -1,8 +1,12 @@
+// ignore_for_file: overridden_fields
+
 import 'dart:io' as io;
 import 'package:cloud_storage_client/models/my_file.dart';
 import 'package:cloud_storage_client/res/assets.dart';
 import 'package:cloud_storage_client/res/strings.dart';
+import 'package:cloud_storage_client/services/storage_service.dart';
 import 'package:cloud_storage_client/services/storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:googleapis/drive/v3.dart';
 import 'package:googleapis/people/v1.dart';
 import 'package:googleapis_auth/auth_io.dart';
@@ -62,17 +66,17 @@ Map<String, Map<String, Icon>> _mimeTypes = {
 
 
 
-class GoogleDrive {
-  // storage instance to manage data in flutter storage
-  static final _storage = Storage();
-  
+class GoogleDrive extends CloudStorageService {
   // email / username in the provider
+  @override
   late String label;
   
   // reference in storage
+  @override
   String prefix = Strings.GOOGLE_DRIVE_PREFIX;
   
   // Icon of the service
+  @override
   Widget icon = const Image(image: Images.googleDrive);
 
   
@@ -102,17 +106,17 @@ class GoogleDrive {
     if (email == null) throw Exception("Email not found");
 
     // save drive
-    await _storage.addDrive(Strings.GOOGLE_DRIVE_PREFIX, email);
+    await Storage.addDrive(Strings.GOOGLE_DRIVE_PREFIX, email);
 
     //Save Credentials
-    await _storage.saveGDriveCredentials(email, authClient.credentials.accessToken, authClient.credentials.refreshToken);
+    await Storage.saveGDriveCredentials(email, authClient.credentials.accessToken, authClient.credentials.refreshToken);
     return GoogleDrive(label: authClient.credentials.accessToken.data);
   }
 
   // http client
   Future<http.Client> _getClient() async {
     //Get Credentials from storage
-    var credentials = await _storage.getGDriveCredentials(label);
+    var credentials = await Storage.getGDriveCredentials(label);
 
     if (credentials == null) {
       //Needs user authentication
@@ -127,7 +131,7 @@ class GoogleDrive {
             launchUrl(Uri.parse(url));
         });
       //Save Credentials
-      await _storage.saveGDriveCredentials(label, authClient.credentials.accessToken, authClient.credentials.refreshToken);
+      await Storage.saveGDriveCredentials(label, authClient.credentials.accessToken, authClient.credentials.refreshToken);
       return authClient;
     } 
   
@@ -145,7 +149,7 @@ class GoogleDrive {
             launchUrl(Uri.parse(url));
         });
       //Save Credentials
-      await _storage.saveGDriveCredentials(label, authClient.credentials.accessToken, authClient.credentials.refreshToken);
+      await Storage.saveGDriveCredentials(label, authClient.credentials.accessToken, authClient.credentials.refreshToken);
       return authClient;
     }
 
@@ -165,6 +169,7 @@ class GoogleDrive {
   }
   
   // Get folder contents
+  @override
   Future<List<MyFile>> getFolder({String? folderId}) async {
     var client = await _getClient();
     var drive = DriveApi(client);
@@ -188,8 +193,9 @@ class GoogleDrive {
   }
   
   // Download File
+  @override
   Future<io.File> downloadFile(String fileId) async {
-    io.Directory tempDir = await _storage.getTemporaryFolder();
+    io.Directory tempDir = await Storage.getTemporaryFolder();
 
     final fileName = '${Strings.TEMPORARY_FILE_PREFIX}_${Strings.GOOGLE_DRIVE_PREFIX}_${label}_$fileId';
     final file = io.File('${tempDir.path}/$fileName');
@@ -208,7 +214,8 @@ class GoogleDrive {
   }
 
   // upload file
-  Future uploadFile({required String filePath, String? folderId, String? fileName}) async {
+  @override
+  Future<bool> uploadFile({required String filePath, String? folderId, String? fileName}) async {
     var client = await _getClient();
     var drive = DriveApi(client);
     var file = File();
@@ -223,7 +230,59 @@ class GoogleDrive {
         io.File(filePath).lengthSync()
       )
     );
-    return response;
+
+    return response.id != null;
   }
 
+  // delete file
+  @override
+  Future<bool> deleteFile(String fileId) async {
+    try {
+      var client = await _getClient();
+      var drive = DriveApi(client);
+      
+      await drive.files.delete(fileId);
+      return true;
+
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        print('An unexpected error occurred: $e');
+      }
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> createFolder({required String folderName, String? parentFolderId}) async {
+    var client = await _getClient();
+    var drive = DriveApi(client);
+    var folder = File();
+
+    folder.name = folderName;
+    folder.parents = [parentFolderId ?? "root"];
+    folder.mimeType = "application/vnd.google-apps.folder";
+
+    var res = await drive.files.create(folder);
+
+    return res.id != null;
+
+  }
+
+  @override
+  Future<bool> deleteFolder(String folderId) {
+    return deleteFile(folderId);
+  }
+
+  @override
+  Future<bool> renameFile(String fileId, String newName) async {
+    var client = await _getClient();
+    var drive = DriveApi(client);
+    var file = File();
+
+    file.name = newName;
+
+    var res = await drive.files.update(file, fileId);
+
+    return res.name == newName;
+  }
 }

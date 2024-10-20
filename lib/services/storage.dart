@@ -19,7 +19,7 @@ class Storage {
 
 
   // Authenticated Cloud Drives' info Storage
-  Future<List<MyDrive>> getDrives() async {
+  static Future<List<MyDrive>> getDrives() async {
     List<MyDrive> drives = [];
 
     // Google Drive
@@ -60,7 +60,7 @@ class Storage {
     return drives;
   }
 
-  Future removeDrive(String prefix, String label) async {
+  static Future removeDrive(String prefix, String label) async {
     String? labels = await _storage.read(key: prefix);
     if (labels == null) return;
 
@@ -72,7 +72,7 @@ class Storage {
     await _storage.write(key: prefix, value: labels);
   }
 
-  Future addDrive(String prefix, String label) async {
+  static Future addDrive(String prefix, String label) async {
     String? labels = await _storage.read(key: prefix);
 
     if (labels == null) {
@@ -97,7 +97,7 @@ class Storage {
 
 
   // Google Drives' info Storage
-  Future saveGDriveCredentials(String email, AccessToken accessToken, String? refreshToken) async {
+  static Future saveGDriveCredentials(String email, AccessToken accessToken, String? refreshToken) async {
     // Serialize the access token to store it in secure storage
     Map<String, dynamic> tokenMap = {
       'tokenType': accessToken.type,
@@ -116,25 +116,25 @@ class Storage {
     );
   }
 
-  Future<Map?> getGDriveCredentials(String email) async {
+  static Future<Map?> getGDriveCredentials(String email) async {
     String? tokenString = await _storage.read(key: '${Strings.GOOGLE_DRIVE_PREFIX}_$email');
     if (tokenString==null) return null;
 
     return jsonDecode(tokenString) as Map;
   }
 
-  Future removeGDriveCredentials(String email) async {
+  static Future removeGDriveCredentials(String email) async {
     await _storage.delete(key: '${Strings.GOOGLE_DRIVE_PREFIX}_$email');
   }
 
 
   // Yandex Disks' info storage
-  Future saveYandexCredentials(String email, String accessToken) async {
+  static Future saveYandexCredentials(String email, String accessToken) async {
     // Store the Yandex credentials securely
     await _storage.write(key: '${Strings.YANDEX_DISK_PREFIX}_$email', value: accessToken);
   }
 
-  Future<Map?> getYandexCredentials(String email) async {
+  static Future<Map?> getYandexCredentials(String email) async {
     // Retrieve Yandex credentials from secure storage
     String? accessToken = await _storage.read(key: '${Strings.YANDEX_DISK_PREFIX}_$email');
 
@@ -146,7 +146,7 @@ class Storage {
     
   }
 
-  Future removeYandexCredentials(String email) async {
+  static Future removeYandexCredentials(String email) async {
     await _storage.delete(key: '${Strings.YANDEX_DISK_PREFIX}_$email');
   }
 
@@ -156,7 +156,7 @@ class Storage {
   static const String _ACCESS_DIRECTORIES_KEY = "accessDirectories";
   static const String _IGNORE_DIRECTORIES_KEY = "ignoreDirectories";
 
-  Future<Map<String, dynamic>> defaultFolderSetting() async {
+  static Future<Map<String, dynamic>> defaultFolderSetting() async {
     if (Platform.isAndroid) {
       var tempDir = "/storage/emulated/0/Android/data/com.sdek.cloud_storage_client/files";
       var accessDirs = ["/storage/emulated/0"];
@@ -197,7 +197,7 @@ class Storage {
     }
   }
 
-  Future<Directory> getTemporaryFolder() async {
+  static Future<Directory> getTemporaryFolder() async {
     var path = await _storage.read(key: _TEMPORARY_FOLDER_KEY);
 
     if (path == null) {
@@ -208,11 +208,11 @@ class Storage {
     return Directory(path);
   }
 
-  Future setTemporaryFolder(String folder) async {
+  static Future setTemporaryFolder(String folder) async {
     await _storage.write(key: _TEMPORARY_FOLDER_KEY, value: folder);
   }
 
-  Future<List<Directory>> getAccessDirectories() async {
+  static Future<List<Directory>> getAccessDirectories() async {
     var paths = await _storage.read(key: _ACCESS_DIRECTORIES_KEY);
 
     if (paths == null) {
@@ -229,7 +229,7 @@ class Storage {
     return dirs;
   }
 
-  Future addAccessDirectory(String path) async {
+  static Future addAccessDirectory(String path) async {
     var paths = await _storage.read(key: _ACCESS_DIRECTORIES_KEY);
 
     if (paths == null) {
@@ -244,7 +244,7 @@ class Storage {
     }
   }
 
-  Future removeAccessDirectory(String path) async {
+  static Future removeAccessDirectory(String path) async {
     var paths = await _storage.read(key: _ACCESS_DIRECTORIES_KEY);
 
     if (paths == null) {
@@ -259,7 +259,7 @@ class Storage {
     }
   }
 
-  Future<List<Directory>> getIgnoreDirectories() async {
+  static Future<List<Directory>> getIgnoreDirectories() async {
     var paths = await _storage.read(key: _IGNORE_DIRECTORIES_KEY);
 
     if (paths == null) {
@@ -276,7 +276,7 @@ class Storage {
     return dirs;
   }
 
-  Future addIgnoreDirectory(String path) async {
+  static Future addIgnoreDirectory(String path) async {
     var paths = await _storage.read(key: _IGNORE_DIRECTORIES_KEY);
 
     if (paths == null) {
@@ -291,7 +291,7 @@ class Storage {
     }
   }
 
-  Future removeIgnoreDirectory(String path) async {
+  static Future removeIgnoreDirectory(String path) async {
     var paths = await _storage.read(key: _IGNORE_DIRECTORIES_KEY);
 
     if (paths == null) {

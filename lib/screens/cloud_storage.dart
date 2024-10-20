@@ -13,60 +13,55 @@ class CloudStorage extends StatefulWidget {
 }
 
 class _CloudStorageState extends State<CloudStorage> {
-  final Storage _storage = Storage();
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _storage.getDrives(),
+      future: Storage.getDrives(),
       builder: (context, snapshot) {
 
-        if (snapshot.hasData && snapshot.data != null) {
+        if (snapshot.connectionState != ConnectionState.done) return const Center(child: CircularProgressIndicator());
+        if (snapshot.hasError || !snapshot.hasData) return const Center(child: Text("Error fetching data"));
 
-          return ListView.builder(
-            itemCount: snapshot.data!.length + 1,
-            itemBuilder: (context, index) {
+        return ListView.builder(
+          itemCount: snapshot.data!.length + 1,
+          itemBuilder: (context, index) {
 
-              // Add Account Tile Element
-              if (index == snapshot.data!.length) {
-                return ListTile(
-                  leading: const Icon(Icons.add),
-                  title: const Text("Add Account"),
-                  onTap: () async {
-                    // Open a modal
-                    await showModalBottomSheet(
-                      context: context,
-                      builder: (context) => AddAccountModal(
-                        parentSetState: setState,
-                      )
-                    );
-                  },
-                );
-              }
-
-              // Drive Tile Element
+            // Add Account Tile Element
+            if (index == snapshot.data!.length) {
               return ListTile(
-                leading: snapshot.data![index].icon,
-                title: Text(snapshot.data![index].label),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return FileExplorer(
-                        providerService: snapshot.data![index].providerService,
-                      );
-                    })
+                leading: const Icon(Icons.add),
+                title: const Text("Add Account"),
+                onTap: () async {
+                  // Open a modal
+                  await showModalBottomSheet(
+                    context: context,
+                    builder: (context) => AddAccountModal(
+                      parentSetState: setState,
+                    )
                   );
                 },
               );
-            },
-          );
-          
-        }
+            }
 
-        else {
-          return const Center(child: CircularProgressIndicator());
-        }
+            // Drive Tile Element
+            return ListTile(
+              leading: snapshot.data![index].icon,
+              title: Text(snapshot.data![index].label),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return FileExplorer(
+                      folderName: snapshot.data![index].label,
+                      providerService: snapshot.data![index].providerService,
+                    );
+                  })
+                );
+              },
+            );
+          },
+        );
       },
     );
   }
@@ -74,7 +69,7 @@ class _CloudStorageState extends State<CloudStorage> {
 
 
 class AddAccountModal extends StatelessWidget {
-  final parentSetState;
+  final Function parentSetState;
 
   const AddAccountModal({super.key, required this.parentSetState});
 

@@ -23,8 +23,6 @@ class LocalAlbum {
 
 
 class LocalAlbumService {
-  static final _storage = Storage();
-
   static Future<bool> _verifyPermission() async {
 
     if (Platform.isLinux) {
@@ -90,8 +88,8 @@ class LocalAlbumService {
   }
 
   static Future getLocalAlbums() async {
-    var accessDirectories = await _storage.getAccessDirectories();
-    var ignoreDirectories = await _storage.getIgnoreDirectories();
+    var accessDirectories = await Storage.getAccessDirectories();
+    var ignoreDirectories = await Storage.getIgnoreDirectories();
 
     var localAlbums = <LocalAlbum>[];
 
@@ -114,26 +112,37 @@ class LocalAlbumService {
   }
 
   static Future<File> getCompressedImage(String imagePath) async {
-    var status = await _verifyPermission();
+    try {
+      var status = await _verifyPermission();
 
-    if (!status || Platform.isLinux) {
+      if (!status || Platform.isLinux) {
+        return File(imagePath);
+      }
+
+      Directory tempDir = await Storage.getTemporaryFolder();
+      String imageId = "local_$imagePath"; 
+
+      if (File("${tempDir.path}/$imageId").existsSync()) {
+        return File("${tempDir.path}/$imageId");
+      }
+
+      final compressedImage = await FlutterImageCompress.compressAndGetFile(
+        imagePath,
+        "${tempDir.path}/$imageId",
+        quality: 50,
+      );
+
+      return File(compressedImage!.path);
+      
+    } catch (e) {
+      
+      if (kDebugMode) {
+        print(e);
+      }
+
       return File(imagePath);
+
     }
-
-    Directory tempDir = await _storage.getTemporaryFolder();
-    String imageId = "local_$imagePath"; 
-
-    if (File("${tempDir.path}/$imageId").existsSync()) {
-      return File("${tempDir.path}/$imageId");
-    }
-
-    final compressedImage = await FlutterImageCompress.compressAndGetFile(
-      imagePath,
-      "${tempDir.path}/$imageId",
-      quality: 50,
-    );
-
-    return File(compressedImage!.path);
 
     
   }

@@ -26,8 +26,6 @@ Add a service class in `lib/services/new_drive.dart` which should contain :
 
 ```dart
 class NewDrive { 
-    // storage instance to manage data in flutter storage
-    final _storage = NewDriveStorage();
     // email / username in the provider
     late String label;
     // reference in storage

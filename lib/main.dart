@@ -2,6 +2,7 @@ import 'package:cloud_storage_client/screens/home_tab_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_storage_client/res/colors.dart';
 
+
 void main() {
   // WidgetsFlutterBinding.ensureInitialized();
 
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Cloud Storage Client',
       themeMode: ThemeMode.system,
 
       // Light Theme
