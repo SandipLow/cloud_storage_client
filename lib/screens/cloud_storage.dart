@@ -49,14 +49,13 @@ class _CloudStorageState extends State<CloudStorage> {
               leading: snapshot.data![index].icon,
               title: Text(snapshot.data![index].label),
               onTap: () {
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(builder: (context) {
-                    return FileExplorer(
-                      folderName: snapshot.data![index].label,
-                      providerService: snapshot.data![index].providerService,
-                    );
-                  })
+                  '/file_explorer',
+                  arguments: FileExplorerArgs(
+                    folderName: snapshot.data![index].label,
+                    providerService: snapshot.data![index].providerService,
+                  ),
                 );
               },
             );
